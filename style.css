@@ -1,0 +1,99 @@
+/* .mygame{
+    height: 100vh;
+} */
+canvas{
+    background-color: rgb(128, 106, 106);
+    max-width: 100%;
+}
+*{
+    padding: 0;
+    margin: 0;
+}
+.scoreboard{
+        position: fixed;
+        top: 5%;
+        left: 5%;
+        font: 600 1.2vmax "Roboto";
+        color: black;
+        display: none;
+}
+form{
+    background-color: blanchedalmond;
+    height: 60vh;
+    width: 60vw;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    border-radius: 5px;
+    justify-content: center;
+    align-items: center;
+}
+form > select,
+form section option{
+    padding: 2vmax;
+    width: 20vw;
+    text-align: center;
+    font-size: 1.4vmax;
+    font-family: cursive;
+    outline: none;
+    transition: all 0.5s;
+    border:none;
+}
+form > input{
+    margin: 2vmax;
+    padding: 2vmax;
+    width: 20vw;
+    cursor: pointer;
+    border: none;
+    color: aliceblue;
+    transition: all 0.5s;
+    background-color: blueviolet;
+    font-size: 1.4vmax;
+    font-family: cursive;
+    outline: none;
+}
+ form >select:hover{
+   
+    box-shadow: 0 0 10px wheat;
+ }
+ form >input:hover{
+   background-color: brown;
+    box-shadow: 0 0 10px wheat;
+ }
+
+
+ .gameover{
+    background-color: rgb(82, 52, 52);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    border-radius: 5px;
+    justify-content: center;
+    align-items: center;
+ }
+ .gameover > button{
+    padding: 1vmax;
+    border: 2px solid rgb(255, 255, 255);
+    cursor: pointer;
+    width: 10vw;
+    background-color: white;
+    font: 900 1.1vmax cursive;
+    transition: all 0.5s;
+ }
+ .gameover > button:hover {
+    background-color: rgb(30, 30, 34);
+    color: white;
+    box-shadow: 0 0 10px rgb(255, 255, 255);
+  }
+  
+  .gameover > div {
+    margin: 1vmax;
+    color: white;
+    font: 600 1.2vmax cursive;
+  }
