@@ -287,6 +287,7 @@ function animation() {
             cancelAnimationFrame(animationid);
             gameOverSound.play();
             scoreboard.innerHTML = `Score:${playerscore}`;
+            window.parent.postMessage({ type: "submit-score", score: playerscore }, "*");
             gameoverloader();
         }
 
@@ -390,5 +391,6 @@ addEventListener("resize",()=>{
 addEventListener("contextmenu",(e)=>{
     e.preventDefault();
 })
+
 
 animation();
