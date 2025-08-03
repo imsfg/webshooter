@@ -29,24 +29,29 @@ document.querySelector("input").addEventListener("click", (e) => {
 });
 
 const gameoverloader = () => {
-  const gameroverbanner = document.createElement("div");
-  const gameoverbutton = document.createElement("button");
-  const highscore = document.createElement("div");
+    const gameroverbanner = document.createElement("div");
+    const gameoverbutton = document.createElement("button");
+    const highscore = document.createElement("div");
 
-  const storedHighScore = localStorage.getItem("highScore") || 0;
-  if (playerscore > storedHighScore) {
-    localStorage.setItem("highScore", playerscore);
-  }
+    const storedHighScore = Number(localStorage.getItem("highScore")) || 0;
 
-  highscore.innerHTML = High Score: ${Math.max(playerscore, storedHighScore)};
-  gameoverbutton.innerText = "Play Again";
-  gameoverbutton.onclick = () => window.location.reload();
+    if (playerscore > storedHighScore) {
+        localStorage.setItem("highScore", playerscore);
+        highscore.innerHTML = `High Score: ${playerscore}`;
+    } else {
+        highscore.innerHTML = `High Score: ${storedHighScore}`;
+    }
 
-  gameroverbanner.className = "gameover";
-  gameroverbanner.appendChild(highscore);
-  gameroverbanner.appendChild(gameoverbutton);
-  document.body.appendChild(gameroverbanner);
+    gameoverbutton.innerHTML = "Play Again";
+    gameroverbanner.appendChild(highscore);
+    gameroverbanner.appendChild(gameoverbutton);
+    gameoverbutton.onclick = () => {
+        window.location.reload();
+    };
+    gameroverbanner.classList.add("gameover");
+    document.querySelector("body").appendChild(gameroverbanner);
 };
+
 
 const playerposition = {
   x: canvas.width / 2,
@@ -261,3 +266,4 @@ window.addEventListener("resize", () => window.location.reload());
 window.addEventListener("contextmenu", (e) => e.preventDefault());
 
 animation();
+
