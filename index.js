@@ -10,11 +10,13 @@ document.querySelector(".mygame").appendChild(canvas);
 canvas.width = innerWidth;
 canvas.height = innerHeight;
 const context = canvas.getContext("2d");
+
 const lightweapondamage = 10;
 let difficulty = 2;
 const form = document.querySelector("form");
 const scoreboard = document.querySelector(".scoreboard");
 let playerscore = 0;
+
 document.querySelector("input").addEventListener("click", (e) => {
     e.preventDefault();
     form.style.display = "none";
@@ -36,40 +38,30 @@ document.querySelector("input").addEventListener("click", (e) => {
         setInterval(spawnenemy, 1000);
         return (difficulty = 6);
     }
-})
+});
 
 const gameoverloader = () => {
-    const gameroverbanner = document.createElement("div");
-    const gameoverbutton = document.createElement("button");
     const highscore = document.createElement("div");
+    const oldhighscore = localStorage.getItem("highScore");
 
-    highscore.innerHTML=`High Score ${
-        localStorage.getItem("highScore")?localStorage.getItem("highScore"):playerscore
-    }`;
+    highscore.innerHTML = High Score: ${oldhighscore ? oldhighscore : playerscore};
 
-    const oldhighscore=localStorage.getItem("highScore") && localStorage.getItem("highScore");
-    if(oldhighscore<playerscore){
-        localStorage.setItem("highScore",playerscore);
-        highscore.innerHTML=`High Score: ${playerscore}`;
+    if (!oldhighscore || oldhighscore < playerscore) {
+        localStorage.setItem("highScore", playerscore);
+        highscore.innerHTML = High Score: ${playerscore};
     }
 
-    gameoverbutton.innerHTML = "Play Again";
-    gameroverbanner.appendChild(highscore);
-    gameroverbanner.appendChild(gameoverbutton);
-    gameoverbutton.onclick = () => {
-        window.location.reload();
-    };
-    gameroverbanner.classList.add("gameover");
-    document.querySelector("body").appendChild(gameroverbanner);
-}
+    document.querySelector("body").appendChild(highscore);
+    
+    // Inform parent (React) to remove iframe and show results
+    window.parent.postMessage({ type: "score-submitted-done" }, "*");
+};
 
-
-
-
-playerposition = {
+const playerposition = {
     x: canvas.width / 2,
     y: canvas.height / 2,
 };
+
 class player {
     constructor(x, y, radius, color) {
         this.x = x;
@@ -80,20 +72,12 @@ class player {
 
     draw() {
         context.beginPath();
-        context.arc(this.x,
-            this.y,
-            this.radius,
-            (Math.PI / 180) * 0,
-            (Math.PI / 180) * 360, false);
+        context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
         context.fillStyle = this.color;
         context.fill();
     }
-    // update(){
-    //     this.x+= Math.random() * 10;
-    //     this.y+= Math.random() * 10;
-    // }
 }
-//--------------------------- bullet shoot
+
 class Weapon {
     constructor(x, y, radius, color, velocity, damage) {
         this.x = x;
@@ -106,21 +90,17 @@ class Weapon {
 
     draw() {
         context.beginPath();
-        context.arc(this.x,
-            this.y,
-            this.radius,
-            (Math.PI / 180) * 0,
-            (Math.PI / 180) * 360, false);
+        context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
         context.fillStyle = this.color;
         context.fill();
     }
+
     update() {
         this.draw();
         this.x += this.velocity.x;
         this.y += this.velocity.y;
     }
 }
-
 
 class HugeWeapon {
     constructor(x, y) {
@@ -141,8 +121,6 @@ class HugeWeapon {
     }
 }
 
-
-// enimies
 class Enemy {
     constructor(x, y, radius, color, velocity) {
         this.x = x;
@@ -150,19 +128,15 @@ class Enemy {
         this.radius = radius;
         this.color = color;
         this.velocity = velocity;
-
     }
 
     draw() {
         context.beginPath();
-        context.arc(this.x,
-            this.y,
-            this.radius,
-            (Math.PI / 180) * 0,
-            (Math.PI / 180) * 360, false);
+        context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
         context.fillStyle = this.color;
         context.fill();
     }
+
     update() {
         this.draw();
         this.x += this.velocity.x;
@@ -185,15 +159,12 @@ class Particle {
         context.save();
         context.globalAlpha = this.alpha;
         context.beginPath();
-        context.arc(this.x,
-            this.y,
-            this.radius,
-            (Math.PI / 180) * 0,
-            (Math.PI / 180) * 360, false);
+        context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
         context.fillStyle = this.color;
         context.fill();
         context.restore();
     }
+
     update() {
         this.draw();
         this.velocity.x *= friction;
@@ -204,48 +175,39 @@ class Particle {
     }
 }
 
-// const safal = new player(playerposition.x, playerposition.y, 15, "blue");
-// safal.draw();
-const safal = new player(
-    playerposition.x,
-    playerposition.y,
-    15,
-    "white"
-);
+const safal = new player(playerposition.x, playerposition.y, 15, "white");
 
-const weapons = []
+const weapons = [];
 const enemies = [];
 const particles = [];
 const hugeweapon = [];
-const spawnenemy = () => {
 
-    const enemysize = Math.random() * (35) + 5;
-    const enemycolor = `hsl(${Math.floor(Math.random() * 360)},100%,50%)`;
+const spawnenemy = () => {
+    const enemysize = Math.random() * 35 + 5;
+    const enemycolor = hsl(${Math.floor(Math.random() * 360)},100%,50%);
     let random;
+
     if (Math.random() < 0.5) {
         random = {
             x: Math.random() < 0.5 ? canvas.width + enemysize : 0 - enemysize,
             y: Math.random() * canvas.height
         };
-    }
-    else {
+    } else {
         random = {
             x: Math.random() * canvas.width,
             y: Math.random() < 0.5 ? canvas.height + enemysize : 0 - enemysize,
-        }
+        };
     }
-    const angles = Math.atan2(
-        canvas.height / 2 - random.y,
-        canvas.width / 2 - random.x,
-    );
+
+    const angle = Math.atan2(canvas.height / 2 - random.y, canvas.width / 2 - random.x);
     const velocity = {
-        x: Math.cos(angles) * difficulty,
-        y: Math.sin(angles) * difficulty,
-    }
+        x: Math.cos(angle) * difficulty,
+        y: Math.sin(angle) * difficulty,
+    };
 
-    enemies.push(new Enemy(random.x, random.y, enemysize, enemycolor, velocity))
+    enemies.push(new Enemy(random.x, random.y, enemysize, enemycolor, velocity));
+};
 
-}
 let animationid;
 function animation() {
     animationid = requestAnimationFrame(animation);
@@ -253,144 +215,115 @@ function animation() {
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     safal.draw();
-    particles.forEach((particle, particleindex) => {
+
+    particles.forEach((particle, i) => {
         if (particle.alpha <= 0) {
-            particles.splice(particleindex, 1);
-        }
-        else {
+            particles.splice(i, 1);
+        } else {
             particle.update();
         }
-
     });
 
-    hugeweapon.forEach((huge, hugeweaponindex) => {
+    hugeweapon.forEach((huge, i) => {
         if (huge.x > canvas.width) {
-            hugeweapon.splice(hugeweaponindex, 1);
-        }
-        else {
-            huge.update()
-        }
-    })
-
-
-    weapons.forEach((weapon, weaponindex) => {
-        weapon.update();
-        if (weapon.x + weapon.radius < 1 || weapon.y + weapon.radius < 1 ||
-            weapon.x - weapon.radius > canvas.width || weapon.y - weapon.radius > canvas.height) {
-            weapons.splice(weaponindex, 1);
+            hugeweapon.splice(i, 1);
+        } else {
+            huge.update();
         }
     });
-    enemies.forEach((enemy, enemyindex) => {
+
+    weapons.forEach((weapon, i) => {
+        weapon.update();
+        if (
+            weapon.x + weapon.radius < 0 || weapon.y + weapon.radius < 0 ||
+            weapon.x - weapon.radius > canvas.width || weapon.y - weapon.radius > canvas.height
+        ) {
+            weapons.splice(i, 1);
+        }
+    });
+
+    enemies.forEach((enemy, enemyIndex) => {
         enemy.update();
-        const distancebetweenbandaandenemy = Math.hypot(safal.x - enemy.x, safal.y - enemy.y);
-        if (distancebetweenbandaandenemy - safal.radius - enemy.radius < 1) {
+        const distToPlayer = Math.hypot(safal.x - enemy.x, safal.y - enemy.y);
+        if (distToPlayer - safal.radius - enemy.radius < 1) {
             cancelAnimationFrame(animationid);
             gameOverSound.play();
-            scoreboard.innerHTML = `Score:${playerscore}`;
+            scoreboard.innerHTML = Score:${playerscore};
             window.parent.postMessage({ type: "submit-score", score: playerscore }, "*");
             gameoverloader();
         }
 
         hugeweapon.forEach((hugew) => {
-            const distancebetweenhugeweaponandenemy = hugew.x - enemy.x;
-            if (distancebetweenhugeweaponandenemy <= 200 && distancebetweenhugeweaponandenemy >= -200) {
+            const dist = hugew.x - enemy.x;
+            if (dist <= 200 && dist >= -200) {
                 playerscore += 10;
-                scoreboard.innerHTML = `Score:${playerscore}`;
-                setTimeout(() => {
-                    enemies.splice(enemyindex, 1);
-                }, 0);
+                scoreboard.innerHTML = Score:${playerscore};
+                enemies.splice(enemyIndex, 1);
             }
+        });
 
-        })
-
-
-
-        weapons.forEach((weapon, weaponindex) => {
-            const distancebetweenweapanandenemy = Math.hypot(weapon.x - enemy.x, weapon.y - enemy.y);
-            if (distancebetweenweapanandenemy - weapon.radius - enemy.radius < 1) {
-
+        weapons.forEach((weapon, weaponIndex) => {
+            const dist = Math.hypot(weapon.x - enemy.x, weapon.y - enemy.y);
+            if (dist - weapon.radius - enemy.radius < 1) {
                 if (enemy.radius > weapon.damage + 5) {
                     gsap.to(enemy, {
                         radius: enemy.radius - weapon.damage,
                     });
-
-                    setTimeout(() => {
-                        weapons.splice(weaponindex, 1);
-                    }, 0);
-                }
-                else {
-
+                    weapons.splice(weaponIndex, 1);
+                } else {
                     for (let i = 0; i < enemy.radius * 2; i++) {
-                        particles.push(new Particle(weapon.x, weapon.y, Math.random() * 3, enemy.color, { x: (Math.random() - 0.5) * Math.random() * 5, y: (Math.random() - 0.5) * Math.random() * 5 }))
+                        particles.push(new Particle(weapon.x, weapon.y, Math.random() * 3, enemy.color, {
+                            x: (Math.random() - 0.5) * Math.random() * 5,
+                            y: (Math.random() - 0.5) * Math.random() * 5,
+                        }));
                     }
                     playerscore += 20;
-                    scoreboard.innerHTML = `Score:${playerscore}`;
+                    scoreboard.innerHTML = Score:${playerscore};
                     killEnemySound.play();
-                    setTimeout(() => {
-                        enemies.splice(enemyindex, 1);
-                        weapons.splice(weaponindex, 1);
-                    }, 0);
+                    enemies.splice(enemyIndex, 1);
+                    weapons.splice(weaponIndex, 1);
                 }
             }
-        })
+        });
     });
-    // safal.update();
 }
 
 canvas.addEventListener("click", (e) => {
     shootingSound.play();
-    const angles = Math.atan2(e.clientY - canvas.height / 2, e.clientX - canvas.width / 2);
+    const angle = Math.atan2(e.clientY - canvas.height / 2, e.clientX - canvas.width / 2);
     const velocity = {
-        x: Math.cos(angles) * 8,
-        y: Math.sin(angles) * 8,
-    }
-    weapons.push(new Weapon(
-        canvas.width / 2,
-        canvas.height / 2,
-        5,
-        "white", velocity, lightweapondamage))
+        x: Math.cos(angle) * 8,
+        y: Math.sin(angle) * 8,
+    };
+    weapons.push(new Weapon(canvas.width / 2, canvas.height / 2, 5, "white", velocity, lightweapondamage));
 });
 
 canvas.addEventListener("contextmenu", (e) => {
     e.preventDefault();
-    if (playerscore < 5) {
-        return;
-    }
+    if (playerscore < 5) return;
+
     heavyWeaponSound.play();
     playerscore -= 5;
-    scoreboard.innerHTML = `Score:${playerscore}`;
-    const angles = Math.atan2(e.clientY - canvas.height / 2, e.clientX - canvas.width / 2);
+    scoreboard.innerHTML = Score:${playerscore};
+    const angle = Math.atan2(e.clientY - canvas.height / 2, e.clientX - canvas.width / 2);
     const velocity = {
-        x: Math.cos(angles) * 4,
-        y: Math.sin(angles) * 4,
-    }
-    weapons.push(new Weapon(
-        canvas.width / 2,
-        canvas.height / 2,
-        15,
-        "cyan", velocity, lightweapondamage * 3))
+        x: Math.cos(angle) * 4,
+        y: Math.sin(angle) * 4,
+    };
+    weapons.push(new Weapon(canvas.width / 2, canvas.height / 2, 15, "cyan", velocity, lightweapondamage * 3));
 });
 
 addEventListener("keypress", (e) => {
     if (e.key === " ") {
-        if (playerscore < 30) {
-            return;
-        }
+        if (playerscore < 30) return;
         hugeWeaponSound.play();
         playerscore -= 30;
-        scoreboard.innerHTML = `Score:${playerscore}`;
-        hugeweapon.push(new HugeWeapon(
-            0,
-            0))
-
+        scoreboard.innerHTML = Score:${playerscore};
+        hugeweapon.push(new HugeWeapon(0, 0));
     }
 });
-addEventListener("resize",()=>{
-    window.location.reload();
-})
-addEventListener("contextmenu",(e)=>{
-    e.preventDefault();
-})
 
+addEventListener("resize", () => window.location.reload());
+addEventListener("contextmenu", (e) => e.preventDefault());
 
 animation();
